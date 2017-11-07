@@ -4,7 +4,8 @@
     {
       description: 'add processor',
       control: 'btnAddProc',
-      condition: () => val('processors') < val('memory')/2
+      condition: () => (val('processors') < val('memory')/2)
+                     || val('memory') >= 250
     },
     {
       description: 'add memory',
@@ -18,7 +19,6 @@
     },
     {
       phase: 0,
-      description: 'buy wire',
       control: 'btnBuyWire',
       condition: () => val('wire') === 0
     },
@@ -30,15 +30,16 @@
     },    
     {
       phase: 0,
-      description: 'lower price',
+      timeout: 2000,
       control: 'btnLowerPrice',
-      condition: () => val('unsoldClips') > 100 && val('margin') > 0.02
+      condition: () => val('unsoldClips') > Math.log10(val('clips'))*100 && val('margin') > 0.02
     },
     {
       phase: 0,
-      description: 'raise price',
+      timeout: 2000,
       control: 'btnRaisePrice',
-      condition: () => val('unsoldClips') < 2 && val('wire') > 0 && val('margin') < 0.06
+      condition: () => val('unsoldClips') < Math.log10(val('clips'))*10
+                    && val('wire') > 0 && val('margin') < 0.10
     },
     {
       phase: 0,
@@ -65,6 +66,7 @@
       phase: 0,
       description: 'invest',
       control: 'btnInvest',
+      timeout: 10000,
       condition: () => exists('investmentEngine')
         && ((val('portValue') < 2000000
         && val('funds') > 10000 && val('funds') < 1000000 
@@ -85,7 +87,6 @@
     },    
     {
       phase: 0,
-      description: 'make paperclip',
       control: 'btnMakePaperclip',
       condition: () => val('clipmakerLevel2') < 20
     },
@@ -99,21 +100,23 @@
       phase: 1,
       description: 'make battery tower',
       control: 'btnMakeBattery',
-      condition: () => val('maxStorage') <= val('powerProductionRate')*10
+      condition: () => val('maxStorage') <= val('powerProductionRate')*100
     },
     {
       phase: 1,
       description: 'make harvester',
       control: 'btnMakeHarvester',
+      timeout: 2,
       condition: () => ((val('powerConsumptionRate') < val('powerProductionRate')
-                    && val('harvesterLevelDisplay') <= val('factoryLevelDisplay')*60))
+                    && val('harvesterLevelDisplay') <= val('factoryLevelDisplay')*500))
     },
     {
       phase: 1,
+      timeout: 2,
       description: 'make wire drone',
       control: 'btnMakeWireDrone',
       condition: () => val('powerConsumptionRate') < val('powerProductionRate')
-                    && val('wireDroneLevelDisplay') <= val('factoryLevelDisplay')*60
+                    && val('wireDroneLevelDisplay') <= val('factoryLevelDisplay')*500
     },  
     {
       phase: 1,
@@ -130,12 +133,10 @@
       perform: (control) => control.selectedIndex = control.querySelectorAll('option').length - 1
     },
     {
-      description: 'run tournament',
       control: 'btnRunTournament',
       condition: () => exists('tournamentManagement')
     },
     {
-      description: 'new tournament',
       control: 'btnNewTournament',
       condition: () => exists('tournamentManagement')
     },
@@ -146,7 +147,6 @@
       perform: (control) => control.value = 150
     },    
     {
-      description: 'quantum compute',
       control: 'btnQcompute',
       condition: () => {
         var chips = document.querySelectorAll('.qChip');
@@ -193,6 +193,18 @@
       actionPointer.style = '';
     }, 3000);
   }
+
+  function skipForTimeout(action) {
+    if (!action.timeout)
+      return false;
+    const now = Date.now();
+    if (now < action.valid_time) {
+      return true;
+    } else {
+      action.valid_time = now + action.timeout;
+      return false;
+    }
+  }
   
   function autoLoop() {
     var currentPhase = detectPhase();
@@ -202,16 +214,19 @@
 
       if (action.condition()) {
         const control = typeof(action.control) === 'function' ? action.control() : el(action.control);
-        if (control !== null && enabled(control.id)) {
+        if (control !== null && enabled(control.id) && !skipForTimeout(action)) {
           if (typeof(action.perform) === 'function') {
             action.perform(control);
           } else {
             control.click();
           }
+
           updateActionPointer(control);
 
-          console.log(typeof(action.description) === 'function' 
-           ? action.description(control) : action.description);
+          if (action.description) {
+            console.log(typeof(action.description) === 'function' 
+            ? action.description(control) : action.description);
+          }
 
           return true;
         }
@@ -223,6 +238,6 @@
   actionPointer.id = 'actionPointer';
   document.body.appendChild(actionPointer);
 
-  setInterval(autoLoop, 50);
+  setInterval(autoLoop, 47);
 
 })();
