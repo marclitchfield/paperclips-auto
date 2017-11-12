@@ -190,56 +190,56 @@
       phase: 3,
       control: 'btnRaiseProbeSpeed',
       condition: () => val('probeSpeedDisplay') < Math.min(5, Math.floor(val('probeTrustDisplay') 
-        * 0.1 * (exists('combatButtonDiv') ? 0.75 : 1)))
+        * 0.2 * (exists('combatButtonDiv') ? 0.8 : 1)))
     },
     {
       description: 'lower probe speed',
       phase: 3,
       control: 'btnLowerProbeSpeed',
       condition: () => val('probeSpeedDisplay') > Math.floor(val('probeTrustDisplay') 
-        * 0.1 * (exists('combatButtonDiv') ? 0.75 : 1))
+        * 0.2 * (exists('combatButtonDiv') ? 0.8 : 1))
     },
     {
       description: 'raise probe nav',
       phase: 3,
       control: 'btnRaiseProbeNav',
       condition: () => val('probeNavDisplay') < Math.min(10, Math.floor(val('probeTrustDisplay') 
-        * 0.1 * (exists('combatButtonDiv') ? 0.75 : 1)))
+        * 0.1 * (exists('combatButtonDiv') ? 0.8 : 1)))
     },
     {
       description: 'lower probe nav',
       phase: 3,
       control: 'btnLowerProbeNav',
       condition: () => val('probeNavDisplay') > Math.floor(val('probeTrustDisplay') 
-        * 0.1 * (exists('combatButtonDiv') ? 0.75 : 1))
+        * 0.1 * (exists('combatButtonDiv') ? 0.8 : 1))
     },
     {
       description: 'raise probe rep',
       phase: 3,
       control: 'btnRaiseProbeRep',
       condition: () => val('probeRepDisplay') < Math.min(10, Math.floor(val('probeTrustDisplay') 
-        * 0.4 * (exists('combatButtonDiv') ? 0.75 : 1)))
+        * 0.3 * (exists('combatButtonDiv') ? 0.8 : 1)))
     },
     {
       description: 'lower probe rep',
       phase: 3,
       control: 'btnLowerProbeRep',
       condition: () => val('probeRepDisplay') > Math.floor(val('probeTrustDisplay') 
-        * 0.4 * (exists('combatButtonDiv') ? 0.75 : 1))
+        * 0.3 * (exists('combatButtonDiv') ? 0.8 : 1))
     },
     {
       description: 'raise probe haz',
       phase: 3,
       control: 'btnRaiseProbeHaz',
       condition: () => val('probeHazDisplay') < Math.min(10, Math.floor(val('probeTrustDisplay') 
-        * 0.4 * (exists('combatButtonDiv') ? 0.75 : 1)))
+        * 0.3 * (exists('combatButtonDiv') ? 0.8 : 1)))
     },
     {
       description: 'lower probe haz',
       phase: 3,
       control: 'btnLowerProbeHaz',
       condition: () => val('probeHazDisplay') > Math.floor(val('probeTrustDisplay') 
-        * 0.4 * (exists('combatButtonDiv') ? 0.75 : 1))
+        * 0.3 * (exists('combatButtonDiv') ? 0.8 : 1))
     },
     {
       description: 'raise probe fac',
