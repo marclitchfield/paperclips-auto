@@ -1,6 +1,7 @@
 (function() {
 
   const ACCEPT_OFFER = false;
+  let cache = {};
 
   actions = [
     {
@@ -13,12 +14,13 @@
     },
     {
       description: 'add memory',
-      timeout: 100,
+      timeout: 62,
       control: 'btnAddMem',
       condition: () => exists('memoryDisplay') && val('memory') < 250
     },
     {
       description: (control) => 'project: ' + control.querySelector('span').innerText,
+      timeout: 62,
       control: () => [].find.call(document.querySelectorAll('.projectButton:enabled'), (p) => 
         p.querySelector('span').innerText.trim() !== (ACCEPT_OFFER ? 'Reject' : 'Accept')) || {},
       condition: () => true
@@ -67,9 +69,12 @@
       description: 'withdraw',
       phase: 1,
       control: 'btnWithdraw',
-      condition: () => exists('investmentEngine') 
-        && ((val('investmentBankroll') > 1000000 && val('secValue') > 0)
-        || val('avgSales') === 0)
+      condition: () => exists('investmentEngine')
+        && (val('investmentBankroll') + val('funds') > [].reduce.call(document.querySelectorAll('.projectButton'), (min, el) => { 
+          const match = el.innerText.match(/\(\$(.*)\)/);
+          return Math.min(min, match ? match[1].replace(/,/g, '') : min);
+        }, 50000000)
+          || val('clipmakerRate') === 0)
     },
     {
       description: 'invest',
@@ -77,9 +82,9 @@
       control: 'btnInvest',
       timeout: 10000,
       condition: () => exists('investmentEngine')
-        && ((val('portValue') < 2000000
-        && val('funds') > 10000 
-        && val('wire') > 3000) || val('portValue') === 0)
+        && ((val('portValue') < 10000000
+        && val('funds') > 900000
+        && val('wire') > 10000) || val('portValue') === 0)
     },
     {
       description: 'buy autoclippers',
@@ -92,9 +97,10 @@
       description: 'buy megaclippers',
       phase: 1,
       control: 'btnMakeMegaClipper',
-      condition: () => val('funds') > val('megaClipperCost') + val('wireCost')
+      condition: () => exists('megaClipperDiv')
+        && val('funds') > val('megaClipperCost') + val('wireCost')
         && val('megaClipperLevel') < 105
-    },    
+    },
     {
       description: '# make paperclip',
       phase: 1,
@@ -102,45 +108,70 @@
       condition: () => val('clipmakerLevel2') < 20
     },
     {
-      description: 'final paperclips...',
-      phase: 4,
-      control: 'btnMakePaperclip',
-      condition: () => true
-    },
-    {
-      description: 'make solar farm',
-      phase: 2,
-      control: 'btnMakeFarm',
-      condition: () => val('powerConsumptionRate')+500 >= val('powerProductionRate')
-    },
-    {
-      description: 'make battery tower',
-      phase: 2,
-      control: 'btnMakeBattery',
-      condition: () => val('maxStorage') <= val('powerProductionRate')*100
-    },
-    {
-      description: 'make harvester',
-      phase: 2,
-      timeout: 2,
-      control: 'btnMakeHarvester',
-      condition: () => ((val('powerConsumptionRate') < val('powerProductionRate')
-        && val('harvesterLevelDisplay') <= val('factoryLevelDisplay')*200))
-    },
-    {
-      description: 'make wire drone',
-      phase: 2,
-      timeout: 2,
-      control: 'btnMakeWireDrone',
-      condition: () => val('powerConsumptionRate') < val('powerProductionRate')
-        && val('wireDroneLevelDisplay') <= val('factoryLevelDisplay')*200
-    },  
-    {
       description: 'make factory',
       phase: 2,
+      timeout: 120,
       control: 'btnMakeFactory',
-      condition: () => (val('powerConsumptionRate')+500 < val('powerProductionRate'))
-        || val('factoryLevelDisplay') === 0
+      condition: () => exists('factoryDiv')
+        && (val('factoryLevelDisplay') < 220)
+        && ((val('powerConsumptionRate')+100) <= val('powerProductionRate')
+          || val('factoryLevelDisplay') === 0)
+    },
+    {
+      description: '# make battery tower',
+      phase: 2,
+      control: 'btnMakeBattery',
+      condition: () => exists('powerDiv')
+        && val('maxStorage') <= val('powerProductionRate')*100
+    },
+    {
+      description: '# make harvester',
+      control: 'btnMakeHarvester',
+      phase: 2,
+      timeout: 62,
+      condition: () => exists('harvesterDiv') 
+        && (val('harvesterLevelDisplay') < 2.5 * val('factoryLevelDisplay') ** 2)
+        && (((val('powerConsumptionRate')+100) <= val('powerProductionRate'))
+          || val('harvesterLevelDisplay') === 0)
+        && (val('availableMatterDisplay') > 0)
+    },
+    {
+      description: '# make wire drone',
+      phase: 2,
+      timeout: 62,
+      control: 'btnMakeWireDrone',
+      condition: () => exists('wireDroneDiv')
+        && (val('wireDroneLevelDisplay') < 2.5 * val('factoryLevelDisplay') ** 2)
+        && (((val('powerConsumptionRate')+100) <= val('powerProductionRate'))
+          || val('wireDroneLevelDisplay') === 0)
+    },
+    {
+      description: '# make wire drone x 1000',
+      phase: 2,
+      timeout: 62,
+      control: 'btnWireDronex1000',
+      condition: () => exists('wireDroneDiv')
+        && val('availableMatterDisplay') === 0
+        && val('acquiredMatterDisplay') !== 0
+        && val('wireDroneLevelDisplay') < 50000
+        && val('factoryLevelDisplay') > 200
+    },
+    {
+      description: 'factory reboot',
+      phase: 2,
+      control: 'btnFactoryReboot',
+      condition: () => val('clipmakerRate') === 0
+        && val('availableMatterDisplay') === 0
+        && val('acquiredMatterDisplay') === 0
+    },
+    {
+      description: '# make solar farm',
+      phase: 2,
+      control: 'btnMakeFarm',
+      condition: () => exists('powerDiv')
+        && (val('powerConsumptionRate')+val('harvesterLevelDisplay')+200) >= val('powerProductionRate')
+        && ((val('harvesterLevelDisplay') > 0 && val('wireDroneLevelDisplay') > 0)
+          || val('powerProductionRate') == 0)
     },
     {
       description: 'increase probe trust',
@@ -158,25 +189,57 @@
       description: 'raise probe speed',
       phase: 3,
       control: 'btnRaiseProbeSpeed',
-      condition: () => val('probeSpeedDisplay') < (val('probeTrustUsedDisplay')/10)
+      condition: () => val('probeSpeedDisplay') < Math.min(5, Math.floor(val('probeTrustDisplay') 
+        * 0.1 * (exists('combatButtonDiv') ? 0.75 : 1)))
+    },
+    {
+      description: 'lower probe speed',
+      phase: 3,
+      control: 'btnLowerProbeSpeed',
+      condition: () => val('probeSpeedDisplay') > Math.floor(val('probeTrustDisplay') 
+        * 0.1 * (exists('combatButtonDiv') ? 0.75 : 1))
     },
     {
       description: 'raise probe nav',
       phase: 3,
       control: 'btnRaiseProbeNav',
-      condition: () => val('probeNavDisplay') < (val('probeTrustUsedDisplay')/30)
+      condition: () => val('probeNavDisplay') < Math.min(10, Math.floor(val('probeTrustDisplay') 
+        * 0.1 * (exists('combatButtonDiv') ? 0.75 : 1)))
+    },
+    {
+      description: 'lower probe nav',
+      phase: 3,
+      control: 'btnLowerProbeNav',
+      condition: () => val('probeNavDisplay') > Math.floor(val('probeTrustDisplay') 
+        * 0.1 * (exists('combatButtonDiv') ? 0.75 : 1))
     },
     {
       description: 'raise probe rep',
       phase: 3,
       control: 'btnRaiseProbeRep',
-      condition: () => val('probeRepDisplay') < (val('probeTrustUsedDisplay')/4)
+      condition: () => val('probeRepDisplay') < Math.min(10, Math.floor(val('probeTrustDisplay') 
+        * 0.4 * (exists('combatButtonDiv') ? 0.75 : 1)))
+    },
+    {
+      description: 'lower probe rep',
+      phase: 3,
+      control: 'btnLowerProbeRep',
+      condition: () => val('probeRepDisplay') > Math.floor(val('probeTrustDisplay') 
+        * 0.4 * (exists('combatButtonDiv') ? 0.75 : 1))
     },
     {
       description: 'raise probe haz',
       phase: 3,
       control: 'btnRaiseProbeHaz',
-      condition: () => val('probeHazDisplay') < (val('probeTrustUsedDisplay')/4)
+      condition: () => val('probeHazDisplay') < Math.min(10, Math.floor(val('probeTrustDisplay') 
+        * 0.4 * (exists('combatButtonDiv') ? 0.75 : 1)))
+    },
+    {
+      description: 'lower probe haz',
+      phase: 3,
+      control: 'btnLowerProbeHaz',
+      condition: () => val('probeHazDisplay') > Math.floor(val('probeTrustDisplay') 
+        * 0.4 * (exists('combatButtonDiv') ? 0.75 : 1))
     },
     {
       description: 'raise probe fac',
@@ -200,7 +263,7 @@
       description: 'raise probe combat',
       phase: 3,
       control: 'btnRaiseProbeCombat',
-      condition: () => val('probeCombatDisplay') < (val('probeTrustUsedDisplay')/3)
+      condition: () => exists('combatButtonDiv')
     },
     {
       description: 'launch probe',
@@ -211,7 +274,7 @@
     {
       description: 'entertain swarm',
       control: 'btnEntertainSwarm',
-      condition: () => exists('entertainButtonDiv'),
+      condition: () => exists('entertainButtonDiv')
     },
     {
       description: 'synchronize swarm',
@@ -240,24 +303,34 @@
       control: 'slider',
       condition: () => exists('tournamentManagement') && parseFloat(el('slider').value) !== 150,
       perform: (control) => control.value = 150
-    },    
+    }, 
     {
       description: '# q compute',
       control: 'btnQcompute',
       condition: () => {
         var chips = document.querySelectorAll('.qChip');
         if (chips.length > 0) {
-          const q = [].reduce.call(chips, function(sum, el) { 
-            return sum + parseFloat(el.style.opacity) 
-          }, 0) / chips.length;
+          const q = [].reduce.call(chips, (sum, el) => sum + parseFloat(el.style.opacity) 
+, 0) / chips.length;
           return q > 0;
         }
       }
-    }
+    },
+    {
+      description: 'make paperclip',
+      phase: 4,
+      control: 'btnMakePaperclip',
+      condition: () => true
+    },
   ]
 
   function el(id) {
-    return document.getElementById(id);
+    if (id in cache) {
+      return cache[id];
+    }
+    const element = document.getElementById(id);
+    cache[id] = element;
+    return element;
   }
 
   function val(id) {
@@ -284,13 +357,13 @@
   }
 
   function updateActionPointer(control) {
-    const left = control.offsetLeft;
-    const top = control.offsetTop;
-    actionPointer.style = `position:absolute;border-radius:4px;height:8px;width:8px;background-color:red;left:${left}px;top:${top}px`;
+    actionPointer.style.left = control.offsetLeft;
+    actionPointer.style.top = control.offsetTop;
+    actionPointer.style.display = 'block';
     clearTimeout(window.actionPointerTimeoutId);
 
     window.actionPointerTimeoutId = setTimeout(() => {
-      actionPointer.style = '';
+      actionPointer.style.display = 'none';
     }, 3000);
   }
 
@@ -308,6 +381,7 @@
   
   function autoLoop() {
     var currentPhase = detectPhase();
+    cache = {};
     actions.some(function(action) {
       if (action.phase !== undefined && action.phase !== currentPhase)
         return false;
@@ -322,9 +396,10 @@
 
         updateActionPointer(control);
 
-        if (action.description && action.description.indexOf('#') !== 0) {
-          console.log(typeof(action.description) === 'function' 
-          ? action.description(control) : action.description);
+        if (action.description) {
+          const desc = typeof(action.description) === 'function' ? action.description(control) : action.description;
+          if (desc.indexOf('#') !== 0)
+            console.log(desc);
         }
         return true;
       }
@@ -334,8 +409,9 @@
 
   const actionPointer = document.createElement('div');
   actionPointer.id = 'actionPointer';
+  actionPointer.style = 'position:absolute;border-radius:4px;height:8px;width:8px;background-color:red;display:none';
   document.body.appendChild(actionPointer);
 
-  setInterval(autoLoop, 47);
+  setInterval(autoLoop, 30);
 
 })();
