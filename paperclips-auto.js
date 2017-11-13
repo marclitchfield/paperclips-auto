@@ -20,9 +20,11 @@
     },
     {
       description: (control) => 'project: ' + control.querySelector('span').innerText,
-      timeout: 62,
-      control: () => [].find.call(document.querySelectorAll('.projectButton:enabled'), (p) => 
-        p.querySelector('span').innerText.trim() !== (ACCEPT_OFFER ? 'Reject' : 'Accept')) || {},
+      timeout: 4000,
+      control: () => [].find.call(document.querySelectorAll('.projectButton:enabled'), (p) => {
+        const title = p.querySelector('span').innerText;
+        return title.trim().length > 0 && title.indexOf(ACCEPT_OFFER ? 'Reject' : 'Accept') < 0;
+      }) || {},
       condition: () => true
     },
     {
@@ -36,6 +38,7 @@
       phase: 1,
       control: 'btnExpandMarketing',
       condition: () => val('funds') > val('adCost') + val('wireCost')
+        && val('marketingLvl') < 18
     },    
     {
       description: '# lower price',
@@ -84,7 +87,7 @@
       condition: () => exists('investmentEngine')
         && ((val('portValue') < 10000000
         && val('funds') > 900000
-        && val('wire') > 10000) || val('portValue') === 0)
+        && val('wire') > 10000) || val('portValue') < 10000)
     },
     {
       description: 'buy autoclippers',
@@ -204,14 +207,14 @@
       phase: 3,
       control: 'btnRaiseProbeNav',
       condition: () => val('probeNavDisplay') < Math.min(10, Math.floor(val('probeTrustDisplay') 
-        * 0.1 * (exists('combatButtonDiv') ? 0.8 : 1)))
+        * 0.08 * (exists('combatButtonDiv') ? 0.8 : 1)))
     },
     {
       description: 'lower probe nav',
       phase: 3,
       control: 'btnLowerProbeNav',
       condition: () => val('probeNavDisplay') > Math.floor(val('probeTrustDisplay') 
-        * 0.1 * (exists('combatButtonDiv') ? 0.8 : 1))
+        * 0.08 * (exists('combatButtonDiv') ? 0.8 : 1))
     },
     {
       description: 'raise probe rep',
