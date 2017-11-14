@@ -24,7 +24,7 @@
       control: () => [].find.call(document.querySelectorAll('.projectButton:enabled'), (p) => {
         const title = p.querySelector('span').innerText;
         return title.trim().length > 0 && title.indexOf(ACCEPT_OFFER ? 'Reject' : 'Accept') < 0;
-      }) || {},
+      }),
       condition: () => true
     },
     {
@@ -390,7 +390,7 @@
         return false;
 
       const control = typeof(action.control) === 'function' ? action.control() : el(action.control);
-      if (control !== null && enabled(control.id) && !skipForTimeout(action) && action.condition(control)) {
+      if (control && enabled(control.id) && !skipForTimeout(action) && action.condition(control)) {
         if (typeof(action.perform) === 'function') {
           action.perform(control);
         } else {
