@@ -277,7 +277,7 @@
     {
       description: 'entertain swarm',
       control: 'btnEntertainSwarm',
-      condition: () => exists('entertainButtonDiv')
+      condition: () => exists('swarmEngine')
     },
     {
       description: 'synchronize swarm',
