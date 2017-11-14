@@ -1,8 +1,6 @@
 # Paperclips-Auto
 
-This bit of javascript completes the game Universal Paperclips, unattended. It currently works, but the developers may release updates that will break this code. 
-
-The javascript code is a rudimentary rules engine that relies on the presence of specific DOM elements and game mechanics. Simple mathematical calculations drive the strategy, which has much room for optimization. A 4px red indicator temporarily appears over the clicked control, so you can what the code is doing. Console messages are emitted for some actions (those with a description not preceded by #).
+This bit of javascript completes the game Universal Paperclips, unattended. It currently works, but the developers may release updates that will break this code. The javascript code is a rudimentary rules engine that relies on the presence of specific DOM elements and game mechanics. Simple mathematical calculations drive the strategy, which has much room for optimization. A 4px red indicator temporarily appears over the clicked control, so you can what the code is doing. Console messages are emitted for some actions (those with a description not preceded by #).
 
 The offer will be rejected.
 
