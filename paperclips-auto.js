@@ -282,7 +282,7 @@
     {
       description: 'synchronize swarm',
       control: 'btnSynchSwarm',
-      condition: () => exists('synchButtonDiv')
+      condition: () => exists('swarmEngine')
     },
     {
       description: 'pick strategy',
@@ -304,7 +304,7 @@
     {
       description: 'swarm computing adjustment',
       control: 'slider',
-      condition: () => exists('tournamentManagement') && parseFloat(el('slider').value) !== 150,
+      condition: () => exists('swarmSliderDiv') && parseFloat(el('slider').value) !== 150,
       perform: (control) => control.value = 150
     }, 
     {
