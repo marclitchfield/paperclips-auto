@@ -270,12 +270,12 @@
         {
           description: 'entertain swarm',
           control: 'btnEntertainSwarm',
-          condition: () => true
+          condition: () => exists('entertainButtonDiv')
         },
         {
           description: 'synchronize swarm',
           control: 'btnSynchSwarm',
-          condition: () => true
+          condition: () => exists('synchButtonDiv')
         },
         {
           description: 'swarm computing adjustment',
@@ -292,11 +292,11 @@
         {
           description: 'pick strategy',
           control: 'stratPicker',
-          condition: () => el('stratPicker').selectedIndex !== Math.min(6, el('stratPicker').querySelectorAll('option').length-1),
-          perform: (control) => control.selectedIndex = Math.min(6, control.querySelectorAll('option').length - 1)
+          condition: () => el('stratPicker').selectedIndex !== Math.min(4, el('stratPicker').querySelectorAll('option').length-1),
+          perform: (control) => control.selectedIndex = Math.min(4, control.querySelectorAll('option').length - 1)
         },
         {
-          description: '# run tournament',
+          description: 'run tournament',
           control: 'btnRunTournament',
           condition: () => true
         },
