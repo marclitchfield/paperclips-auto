@@ -321,7 +321,7 @@
     {
       description: 'make paperclip',
       control: 'btnMakePaperclip',
-      condition: () => !exists('businessDiv') && exists('powerDiv') && exists('probeDesignDiv')
+      condition: () => !exists('businessDiv') && !exists('powerDiv') && !exists('probeDesignDiv')
     }
   ]
 
