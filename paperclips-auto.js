@@ -1,4 +1,7 @@
 (() => {
+  if (window.__paperclips_auto === true)
+    return;
+  window.__paperclips_auto = true;
 
   const ACCEPT_OFFER = false;
   let cache = {};
