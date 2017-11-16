@@ -76,7 +76,7 @@
               condition: () => (val('investmentBankroll') + val('funds') > [].reduce.call(document.querySelectorAll('.projectButton'), (min, el) => { 
                   const match = el.innerText.match(/\(\$(.*)\)/);
                   return Math.min(min, match ? match[1].replace(/,/g, '') : min);
-                }, 50000000)
+                }, Number.MAX_VALUE)
                   || val('clipmakerRate') === 0)
             },
             {
@@ -85,7 +85,8 @@
               timeout: 10000,
               condition: () => ((val('portValue') < 10000000
                 && val('funds') > 900000
-                && val('wire') > 10000) || val('portValue') < 10000)
+                && val('wire') > 10000) 
+                  || val('portValue') < 10000)
             }
           ]
         },
