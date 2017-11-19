@@ -31,6 +31,62 @@
       condition: () => true
     },
     {
+      description: 'tournaments',
+      condition: () => exists('tournamentManagement'),
+      rules: [
+        {
+          description: 'pick strategy',
+          control: 'stratPicker',
+          condition: () => el('stratPicker').selectedIndex !== Math.min(4, el('stratPicker').querySelectorAll('option').length-1),
+          action: (control) => control.selectedIndex = Math.min(4, control.querySelectorAll('option').length - 1)
+        },
+        {
+          description: 'run tournament',
+          control: 'btnRunTournament',
+          condition: () => true
+        },
+        {
+          description: '# new tournament',
+          control: 'btnNewTournament',
+          condition: () => true
+        }
+      ]
+    },
+    {
+      description: '# q compute',
+      control: 'btnQcompute',
+      continue: true,
+      condition: () => {
+        var chips = document.querySelectorAll('.qChip');
+        if (chips.length > 0) {
+          const q = [].reduce.call(chips, (sum, el) => sum + parseFloat(el.style.opacity), 0) / chips.length;
+          return q > 0;
+        }
+      }
+    },
+    {
+      description: 'swarm control',
+      condition: () => exists('swarmEngine'),
+      rules: [
+        {
+          description: 'entertain swarm',
+          control: 'btnEntertainSwarm',
+          condition: () => exists('entertainButtonDiv')
+        },
+        {
+          description: 'synchronize swarm',
+          control: 'btnSynchSwarm',
+          condition: () => exists('synchButtonDiv')
+        },
+        {
+          description: 'swarm computing adjustment',
+          control: 'slider',
+          condition: () => exists('swarmSliderDiv') && parseFloat(el('slider').value) !== 150,
+          action: (control) => control.value = 150
+        }
+      ]
+    },
+    {
       description: 'phase 1: money to paperclips',
       condition: () => exists('businessDiv'),
       rules: [
@@ -71,7 +127,7 @@
               description: 'investment strategy',
               control: 'investStrat',
               condition: () => el('investStrat').selectedIndex != 2,
-              perform: (control) => control.selectedIndex = 2     
+              action: (control) => control.selectedIndex = 2     
             },
             {
               description: 'withdraw',
@@ -120,7 +176,7 @@
           timeout: 120,
           control: 'btnMakeFactory',
           condition: () => exists('factoryDiv')
-            && (val('factoryLevelDisplay') < 220)
+            && (val('factoryLevelDisplay') < 200)
             && ((val('powerConsumptionRate')+100) <= val('powerProductionRate')
               || val('factoryLevelDisplay') === 0)
         },
@@ -131,33 +187,76 @@
             && val('maxStorage') <= val('powerProductionRate')*100
         },
         {
+          description: '# make harvester x 1000',
+          control: 'btnHarvesterx1000',
+          condition: () => exists('harvesterDiv') 
+            && (val('harvesterLevelDisplay')+1000 <= 7 * val('factoryLevelDisplay') ** 2)
+            && ((val('powerConsumptionRate')+100) <= val('powerProductionRate'))
+            && (val('availableMatterDisplay') > 0)
+        },
+        {
+          description: '# make wire drone x 100',
+          control: 'btnWireDronex1000',
+          condition: () => exists('wireDroneDiv')
+            && (val('wireDroneLevelDisplay')+1000 <= 7 * val('factoryLevelDisplay') ** 2)
+            && ((val('powerConsumptionRate')+100) <= val('powerProductionRate'))
+            && (val('availableMatterDisplay') > 0)
+        },
+        {
+          description: '# make harvester x 100',
+          control: 'btnHarvesterx100',
+          condition: () => exists('harvesterDiv') 
+            && (val('harvesterLevelDisplay')+100 <= 7 * val('factoryLevelDisplay') ** 2)
+            && (val('harvesterLevelDisplay')+1000 > 7 * val('factoryLevelDisplay') ** 2)
+            && ((val('powerConsumptionRate')+100) <= val('powerProductionRate'))
+            && (val('availableMatterDisplay') > 0)
+        },
+        {
+          description: '# make wire drone x 100',
+          control: 'btnWireDronex100',
+          condition: () => exists('wireDroneDiv')
+            && (val('wireDroneLevelDisplay')+100 <= 7 * val('factoryLevelDisplay') ** 2)
+            && (val('wireDroneLevelDisplay')+1000 > 7 * val('factoryLevelDisplay') ** 2)
+            && ((val('powerConsumptionRate')+100) <= val('powerProductionRate'))
+            && (val('availableMatterDisplay') > 0)
+        },
+        {
+          description: '# make harvester x 10',
+          control: 'btnHarvesterx10',
+          condition: () => exists('harvesterDiv') 
+            && (val('harvesterLevelDisplay')+10 <= 7 * val('factoryLevelDisplay') ** 2)
+            && (val('harvesterLevelDisplay')+100 > 7 * val('factoryLevelDisplay') ** 2)
+            && ((val('powerConsumptionRate')+100) <= val('powerProductionRate'))
+            && (val('availableMatterDisplay') > 0)
+        },
+        {
+          description: '# make wire drone x 10',
+          control: 'btnWireDronex10',
+          condition: () => exists('wireDroneDiv')
+            && (val('wireDroneLevelDisplay')+10 <= 7 * val('factoryLevelDisplay') ** 2)
+            && (val('wireDroneLevelDisplay')+100 > 7 * val('factoryLevelDisplay') ** 2)
+            && ((val('powerConsumptionRate')+100) <= val('powerProductionRate'))
+            && (val('availableMatterDisplay') > 0)
+        },
+        {
           description: '# make harvester',
           control: 'btnMakeHarvester',
-          timeout: 62,
           condition: () => exists('harvesterDiv') 
-            && (val('harvesterLevelDisplay') < 3 * val('factoryLevelDisplay') ** 2)
+            && (val('harvesterLevelDisplay') <= 7 * val('factoryLevelDisplay') ** 2)
+            && (val('harvesterLevelDisplay')+10 > 7 * val('factoryLevelDisplay') ** 2)
             && (((val('powerConsumptionRate')+100) <= val('powerProductionRate'))
               || val('harvesterLevelDisplay') === 0)
             && (val('availableMatterDisplay') > 0)
         },
         {
           description: '# make wire drone',
-          timeout: 62,
           control: 'btnMakeWireDrone',
           condition: () => exists('wireDroneDiv')
-            && (val('wireDroneLevelDisplay') < 3 * val('factoryLevelDisplay') ** 2)
+            && (val('wireDroneLevelDisplay') <= 7 * val('factoryLevelDisplay') ** 2)
+            && (val('wireDroneLevelDisplay')+10 > 7 * val('factoryLevelDisplay') ** 2)
             && (((val('powerConsumptionRate')+100) <= val('powerProductionRate'))
               || val('wireDroneLevelDisplay') === 0)
-        },
-        {
-          description: '# make wire drone x 1000',
-          timeout: 62,
-          control: 'btnWireDronex1000',
-          condition: () => exists('wireDroneDiv')
-            && val('availableMatterDisplay') === 0
-            && val('acquiredMatterDisplay') !== 0
-            && val('wireDroneLevelDisplay') < 50000
-            && val('factoryLevelDisplay') > 200
+            && (val('availableMatterDisplay') > 0)
         },
         {
           description: 'factory reboot',
@@ -171,6 +270,7 @@
           control: 'btnMakeFarm',
           condition: () => exists('powerDiv')
             && (val('powerConsumptionRate')+val('harvesterLevelDisplay')+200) >= val('powerProductionRate')
+            && (val('factoryLevelDisplay') > 0)
             && ((val('harvesterLevelDisplay') > 0 && val('wireDroneLevelDisplay') > 0)
               || val('powerProductionRate') == 0)
         }
@@ -266,61 +366,6 @@
       ]
     },
     {
-      description: 'swarm control',
-      condition: () => exists('swarmEngine'),
-      rules: [
-        {
-          description: 'entertain swarm',
-          control: 'btnEntertainSwarm',
-          condition: () => exists('entertainButtonDiv')
-        },
-        {
-          description: 'synchronize swarm',
-          control: 'btnSynchSwarm',
-          condition: () => exists('synchButtonDiv')
-        },
-        {
-          description: 'swarm computing adjustment',
-          control: 'slider',
-          condition: () => exists('swarmSliderDiv') && parseFloat(el('slider').value) !== 150,
-          perform: (control) => control.value = 150
-        }
-      ]
-    },
-    {
-      description: 'tournaments',
-      condition: () => exists('tournamentManagement'),
-      rules: [
-        {
-          description: 'pick strategy',
-          control: 'stratPicker',
-          condition: () => el('stratPicker').selectedIndex !== Math.min(4, el('stratPicker').querySelectorAll('option').length-1),
-          perform: (control) => control.selectedIndex = Math.min(4, control.querySelectorAll('option').length - 1)
-        },
-        {
-          description: 'run tournament',
-          control: 'btnRunTournament',
-          condition: () => true
-        },
-        {
-          description: '# new tournament',
-          control: 'btnNewTournament',
-          condition: () => true
-        }
-      ]
-    },
-    {
-      description: '# q compute',
-      control: 'btnQcompute',
-      condition: () => {
-        var chips = document.querySelectorAll('.qChip');
-        if (chips.length > 0) {
-          const q = [].reduce.call(chips, (sum, el) => sum + parseFloat(el.style.opacity), 0) / chips.length;
-          return q > 0;
-        }
-      }
-    },
-    {
       description: 'make paperclip',
       control: 'btnMakePaperclip',
       condition: () => !exists('businessDiv') && !exists('powerDiv') && !exists('probeDesignDiv')
@@ -379,8 +424,8 @@
 
       const control = typeof(rule.control) === 'function' ? rule.control() : el(rule.control);
       if (control && enabled(control.id) && !skipForTimeout(rule) && rule.condition(control)) {
-        if (typeof(rule.perform) === 'function') {
-          rule.perform(control);
+        if (typeof(rule.action) === 'function') {
+          rule.action(control);
         } else {
           control.click();
         }
@@ -392,7 +437,8 @@
           if (desc.indexOf('#') !== 0)
             console.log(desc);
         }
-        return true;
+
+        return !rule.continue;
       }
 
       return false;
