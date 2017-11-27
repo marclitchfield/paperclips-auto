@@ -93,26 +93,26 @@
         {
           description: '# buy wire',
           control: 'btnBuyWire',
-          condition: () => val('wire') === 0
+          condition: () => val('wire') < 10
         },
         {
           description: 'expand marketing',
           control: 'btnExpandMarketing',
           condition: () => val('funds') > val('adCost') + val('wireCost')
-            && val('marketingLvl') < 18
+            && val('marketingLvl') < 14
         },    
         {
           description: '# lower price',
           timeout: 2000,
           control: 'btnLowerPrice',
-          condition: () => val('unsoldClips') > Math.log10(val('clips'))*100 && val('margin') > 0.02
+          condition: () => val('unsoldClips') > val('avgSales') * 10 && val('margin') > 0.01
         },
         {
           description: '# raise price',
           timeout: 2000,
           control: 'btnRaisePrice',
-          condition: () => val('unsoldClips') < Math.log10(val('clips'))*10
-            && val('wire') > 0 && val('margin') < 0.10
+          condition: () => val('unsoldClips') < val('avgSales') / 10
+            && val('wire') > 0 && val('margin') < 1.00
         },
         {
           description: 'investment management',
@@ -142,15 +142,15 @@
               description: 'invest',
               control: 'btnInvest',
               timeout: 10000,
-              condition: () => ((val('portValue') < 10000000 && val('funds') > 900000) || val('portValue') < 10000)
-                && val('wire') > 10000
+              condition: () => ((val('portValue') < 10000000 && val('funds') > 900000) || val('portValue') < 20000)
+                && val('wire') > 5000
             }
           ]
         },
         {
           description: 'buy autoclippers',
           control: 'btnMakeClipper',
-          condition: () => val('clipmakerLevel2') < Math.min(val('marketingLvl')*10, 100)
+          condition: () => val('clipmakerLevel2') < Math.min(val('marketingLvl')*12, 100)
             && val('funds') > val('clipperCost') + val('wireCost')
         },
         {
@@ -158,7 +158,7 @@
           control: 'btnMakeMegaClipper',
           condition: () => exists('megaClipperDiv')
             && val('funds') > val('megaClipperCost') + val('wireCost')
-            && val('megaClipperLevel') < 105
+            && val('megaClipperLevel') < 80
         },
         {
           description: '# make paperclip',
