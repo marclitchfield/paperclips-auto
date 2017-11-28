@@ -142,7 +142,7 @@
               description: 'invest',
               control: 'btnInvest',
               timeout: 10000,
-              condition: () => ((val('portValue') < 10000000 && val('funds') > 900000) || val('portValue') < 20000)
+              condition: () => ((val('portValue') < 10000000 && val('funds') > 900000) || val('portValue') < 30000)
                 && val('wire') > 5000
             }
           ]
