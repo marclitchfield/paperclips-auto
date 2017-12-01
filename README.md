@@ -6,7 +6,7 @@ The offer will be rejected.
 
 Monitor your game with [paperclips-reporter](https://github.com/marclitchfield/paperclips-reporter)
 
-## Install
+## Setup
 Make a bookmark with this url:
 ```
 javascript: (function() { var a = document.createElement("script"); a.src = "https://marclitchfield.github.io/paperclips-auto/paperclips-auto.js"; document.getElementsByTagName("head")[0].appendChild(a) })();
