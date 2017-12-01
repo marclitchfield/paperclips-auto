@@ -3,8 +3,66 @@
     return;
   window.__paperclips_auto = true;
 
-  const ACCEPT_OFFER = false;
   let cache = {};
+
+  // Global Rule Parameters
+  const AcceptOffer = false;
+  const MaxMemory = 250;
+  const MemoryToProcessorsRatio = 2;
+  const PreferredStrategyIndex = 4; // Greedy
+  const SwarmComputingLevel = 150;
+  // Phase 1 Rule Parameters
+  const MinWire = 10;
+  const MaxMarketing = 14;
+  const MinClipPrice = 0.01;
+  const MaxClipPrice = 1.00;
+  const UnsoldClipsToSalesRatio = 10;
+  const AutoclipperToMarketingRatio = 12;
+  const MaxAutoclippers = 100;
+  const MaxMegaclippers = 80;
+  const MaxAutoclippersForManualClipping = 20;
+  const InvestmentStrategyIndex = 2; // High risk
+  const MinWireForInvestment = 5000;
+  const MinPassiveInvestmentLevel = 30000;
+  const MinActiveInvestmentLevel = 10000000;
+  const MinFundsForActiveInvestment = 900000;
+  // Phase 2 Rule Parameters
+  const MaxFactories = 200;
+  const PowerProductionBias = 100;
+  const StorageToPowerProductionRatio = 100;
+  const DroneToFactorySquaredRatio = 7;
+  const FarmDroneBias = 200;
+  // Phase 3 Rule Parameters
+  const MaxProbeSpeed = 5;
+  const MaxProbeNav = 10;
+  const MaxProbeRep = 10;
+  const MaxProbeHaz = 10;
+  const MaxProbeFac = 1;
+  const MaxProbeHarv = 1;
+  const MaxProbeWire = 1;
+  // non-combat probes
+  const ProbeSpeedPercent = 0.10; 
+  const ProbeNavPercent = 0.09;
+  const ProbeRepPercent = 0.35;
+  const ProbeHazPercent = 0.35;
+  const ProbeFacPercent = 0.09;
+  const ProbeHarvPercent = 0.09;
+  const ProbeWirePercent = 0.09;
+  // combat is independent of non-combat percentages
+  const ProbeCombatPercent = 0.20;
+
+  function validateProbePercentages() {
+    const percentages = [ProbeSpeedPercent, ProbeNavPercent, ProbeRepPercent, ProbeHazPercent, 
+      ProbeFacPercent, ProbeHarvPercent, ProbeWirePercent];
+    const precombatAllocation = percentages.reduce((acc, pct) => acc + Math.floor(20 * pct), 0);
+    const minCombatAllocation = percentages.reduce((acc, pct) => 
+      Math.min(acc, Math.floor(20 * (1-ProbeCombatPercent) * pct)), Number.MAX_VALUE);
+      
+    if (precombatAllocation !== 20)
+      throw 'Non-Combat Probe Allocation does not equal 20';
+    if (minCombatAllocation === 0)
+      throw 'Combat Probe Allocation will reduce a probe to 0'
+  }
 
   const gameRules = [
     {
@@ -12,21 +70,21 @@
       timeout: 100,
       control: 'btnAddProc',
       condition: () => exists('processorDisplay')
-        && (val('processors') < val('memory')/2 
-          || val('memory') >= 250)
+        && (val('processors')*MemoryToProcessorsRatio < val('memory')
+          || val('memory') >= MaxMemory)
     },
     {
       description: 'add memory',
       timeout: 62,
       control: 'btnAddMem',
-      condition: () => exists('memoryDisplay') && val('memory') < 250
+      condition: () => exists('memoryDisplay') && val('memory') < MaxMemory
     },
     {
       description: (control) => 'project: ' + control.querySelector('span').innerText,
       timeout: 4000,
       control: () => [].find.call(document.querySelectorAll('.projectButton:enabled'), (p) => {
         const title = p.querySelector('span').innerText;
-        return title.trim().length > 0 && title.indexOf(ACCEPT_OFFER ? 'Reject' : 'Accept') < 0;
+        return title.trim().length > 0 && title.indexOf(AcceptOffer ? 'Reject' : 'Accept') < 0;
       }),
       condition: () => true
     },
@@ -37,8 +95,8 @@
         {
           description: 'pick strategy',
           control: 'stratPicker',
-          condition: () => el('stratPicker').selectedIndex !== Math.min(4, el('stratPicker').querySelectorAll('option').length-1),
-          action: (control) => control.selectedIndex = Math.min(4, control.querySelectorAll('option').length - 1)
+          condition: () => el('stratPicker').selectedIndex !== Math.min(PreferredStrategyIndex, el('stratPicker').querySelectorAll('option').length-1),
+          action: (control) => control.selectedIndex = Math.min(PreferredStrategyIndex, control.querySelectorAll('option').length - 1)
         },
         {
           description: 'run tournament',
@@ -81,8 +139,8 @@
         {
           description: 'swarm computing adjustment',
           control: 'slider',
-          condition: () => exists('swarmSliderDiv') && parseFloat(el('slider').value) !== 150,
-          action: (control) => control.value = 150
+          condition: () => exists('swarmSliderDiv') && parseFloat(el('slider').value) !== SwarmComputingLevel,
+          action: (control) => control.value = SwarmComputingLevel
         }
       ]
     },
@@ -93,26 +151,27 @@
         {
           description: '# buy wire',
           control: 'btnBuyWire',
-          condition: () => val('wire') < 10
+          condition: () => val('wire') < MinWire
         },
         {
           description: 'expand marketing',
           control: 'btnExpandMarketing',
           condition: () => val('funds') > val('adCost') + val('wireCost')
-            && val('marketingLvl') < 14
+            && val('marketingLvl') < MaxMarketing
         },    
         {
           description: '# lower price',
           timeout: 2000,
           control: 'btnLowerPrice',
-          condition: () => val('unsoldClips') > val('avgSales') * 10 && val('margin') > 0.01
+          condition: () => val('unsoldClips') > val('avgSales') * UnsoldClipsToSalesRatio 
+            && val('margin') > MinClipPrice
         },
         {
           description: '# raise price',
           timeout: 2000,
           control: 'btnRaisePrice',
-          condition: () => val('unsoldClips') < val('avgSales') / 10
-            && val('wire') > 0 && val('margin') < 1.00
+          condition: () => val('unsoldClips') < val('avgSales') / UnsoldClipsToSalesRatio
+            && val('wire') > MinWire && val('margin') < MaxClipPrice
         },
         {
           description: 'investment management',
@@ -126,8 +185,8 @@
             {
               description: 'investment strategy',
               control: 'investStrat',
-              condition: () => el('investStrat').selectedIndex != 2,
-              action: (control) => control.selectedIndex = 2     
+              condition: () => el('investStrat').selectedIndex != InvestmentStrategyIndex,
+              action: (control) => control.selectedIndex = InvestmentStrategyIndex
             },
             {
               description: 'withdraw',
@@ -142,15 +201,16 @@
               description: 'invest',
               control: 'btnInvest',
               timeout: 10000,
-              condition: () => ((val('portValue') < 10000000 && val('funds') > 900000) || val('portValue') < 30000)
-                && val('wire') > 5000
+              condition: () => ((val('portValue') < MinActiveInvestmentLevel && val('funds') > MinFundsForActiveInvestment) 
+                  || val('portValue') < MinPassiveInvestmentLevel)
+                && val('wire') > MinWireForInvestment
             }
           ]
         },
         {
           description: 'buy autoclippers',
           control: 'btnMakeClipper',
-          condition: () => val('clipmakerLevel2') < Math.min(val('marketingLvl')*12, 100)
+          condition: () => val('clipmakerLevel2') < Math.min(val('marketingLvl')*AutoclipperToMarketingRatio, MaxAutoclippers)
             && val('funds') > val('clipperCost') + val('wireCost')
         },
         {
@@ -158,12 +218,12 @@
           control: 'btnMakeMegaClipper',
           condition: () => exists('megaClipperDiv')
             && val('funds') > val('megaClipperCost') + val('wireCost')
-            && val('megaClipperLevel') < 80
+            && val('megaClipperLevel') < MaxMegaclippers
         },
         {
           description: '# make paperclip',
           control: 'btnMakePaperclip',
-          condition: () => val('clipmakerLevel2') < 20
+          condition: () => val('clipmakerLevel2') < MaxAutoclippersForManualClipping
         }
       ]
     },
@@ -176,87 +236,69 @@
           timeout: 120,
           control: 'btnMakeFactory',
           condition: () => exists('factoryDiv')
-            && (val('factoryLevelDisplay') < 200)
-            && ((val('powerConsumptionRate')+100) <= val('powerProductionRate')
+            && (val('factoryLevelDisplay') < MaxFactories)
+            && ((val('powerConsumptionRate')+PowerProductionBias) <= val('powerProductionRate')
               || val('factoryLevelDisplay') === 0)
         },
         {
           description: '# make battery tower',
           control: 'btnMakeBattery',
           condition: () => exists('powerDiv')
-            && val('maxStorage') <= val('powerProductionRate')*100
+            && val('maxStorage') <= val('powerProductionRate')*StorageToPowerProductionRatio
         },
         {
-          description: '# make harvester x 1000',
-          control: 'btnHarvesterx1000',
-          condition: () => exists('harvesterDiv') 
-            && (val('harvesterLevelDisplay')+1000 <= 7 * val('factoryLevelDisplay') ** 2)
-            && ((val('powerConsumptionRate')+100) <= val('powerProductionRate'))
-            && (val('availableMatterDisplay') > 0)
+          description: 'harvester drones',
+          condition: () => exists('harvesterDiv'),
+          rules: [
+            {
+              description: '# make harvester x 1000',
+              control: 'btnHarvesterx1000',
+              condition: () => shouldMakeDrone(val('harvesterLevelDisplay'), 1000)
+            },
+            {
+              description: '# make harvester x 100',
+              control: 'btnHarvesterx100',
+              condition: () => shouldMakeDrone(val('harvesterLevelDisplay'), 100)
+            },
+            {
+              description: '# make harvester x 10',
+              control: 'btnHarvesterx10',
+              condition: () => shouldMakeDrone(val('harvesterLevelDisplay'), 10)
+            },
+            {
+              description: '# make harvester',
+              control: 'btnMakeHarvester',
+              condition: () => shouldMakeDrone(val('harvesterLevelDisplay'), 1)
+                || val('harvesterLevelDisplay') === 0
+            },
+          ]
         },
         {
-          description: '# make wire drone x 100',
-          control: 'btnWireDronex1000',
-          condition: () => exists('wireDroneDiv')
-            && (val('wireDroneLevelDisplay')+1000 <= 7 * val('factoryLevelDisplay') ** 2)
-            && ((val('powerConsumptionRate')+100) <= val('powerProductionRate'))
-            && (val('availableMatterDisplay') > 0)
-        },
-        {
-          description: '# make harvester x 100',
-          control: 'btnHarvesterx100',
-          condition: () => exists('harvesterDiv') 
-            && (val('harvesterLevelDisplay')+100 <= 7 * val('factoryLevelDisplay') ** 2)
-            && (val('harvesterLevelDisplay')+1000 > 7 * val('factoryLevelDisplay') ** 2)
-            && ((val('powerConsumptionRate')+100) <= val('powerProductionRate'))
-            && (val('availableMatterDisplay') > 0)
-        },
-        {
-          description: '# make wire drone x 100',
-          control: 'btnWireDronex100',
-          condition: () => exists('wireDroneDiv')
-            && (val('wireDroneLevelDisplay')+100 <= 7 * val('factoryLevelDisplay') ** 2)
-            && (val('wireDroneLevelDisplay')+1000 > 7 * val('factoryLevelDisplay') ** 2)
-            && ((val('powerConsumptionRate')+100) <= val('powerProductionRate'))
-            && (val('availableMatterDisplay') > 0)
-        },
-        {
-          description: '# make harvester x 10',
-          control: 'btnHarvesterx10',
-          condition: () => exists('harvesterDiv') 
-            && (val('harvesterLevelDisplay')+10 <= 7 * val('factoryLevelDisplay') ** 2)
-            && (val('harvesterLevelDisplay')+100 > 7 * val('factoryLevelDisplay') ** 2)
-            && ((val('powerConsumptionRate')+100) <= val('powerProductionRate'))
-            && (val('availableMatterDisplay') > 0)
-        },
-        {
-          description: '# make wire drone x 10',
-          control: 'btnWireDronex10',
-          condition: () => exists('wireDroneDiv')
-            && (val('wireDroneLevelDisplay')+10 <= 7 * val('factoryLevelDisplay') ** 2)
-            && (val('wireDroneLevelDisplay')+100 > 7 * val('factoryLevelDisplay') ** 2)
-            && ((val('powerConsumptionRate')+100) <= val('powerProductionRate'))
-            && (val('availableMatterDisplay') > 0)
-        },
-        {
-          description: '# make harvester',
-          control: 'btnMakeHarvester',
-          condition: () => exists('harvesterDiv') 
-            && (val('harvesterLevelDisplay') <= 7 * val('factoryLevelDisplay') ** 2)
-            && (val('harvesterLevelDisplay')+10 > 7 * val('factoryLevelDisplay') ** 2)
-            && (((val('powerConsumptionRate')+100) <= val('powerProductionRate'))
-              || val('harvesterLevelDisplay') === 0)
-            && (val('availableMatterDisplay') > 0)
-        },
-        {
-          description: '# make wire drone',
-          control: 'btnMakeWireDrone',
-          condition: () => exists('wireDroneDiv')
-            && (val('wireDroneLevelDisplay') <= 7 * val('factoryLevelDisplay') ** 2)
-            && (val('wireDroneLevelDisplay')+10 > 7 * val('factoryLevelDisplay') ** 2)
-            && (((val('powerConsumptionRate')+100) <= val('powerProductionRate'))
-              || val('wireDroneLevelDisplay') === 0)
-            && (val('availableMatterDisplay') > 0)
+          description: 'wire drones',
+          condition: () => exists('wireDroneDiv'),
+          rules: [
+            {
+              description: '# make wire drone x 1000',
+              control: 'btnWireDronex1000',
+              condition: () => shouldMakeDrone(val('wireDroneLevelDisplay'), 1000)
+            },
+            {
+              description: '# make wire drone x 100',
+              control: 'btnWireDronex100',
+              condition: () => shouldMakeDrone(val('wireDroneLevelDisplay'), 100)
+            },
+            {
+              description: '# make wire drone x 10',
+              control: 'btnWireDronex10',
+              condition: () => shouldMakeDrone(val('wireDroneLevelDisplay'), 10)
+            },
+            {
+              description: '# make wire drone',
+              control: 'btnMakeWireDrone',
+              condition: () => shouldMakeDrone(val('wireDroneLevelDisplay'), 1)
+                || val('wireDroneLevelDisplay') === 0
+            }
+          ]
         },
         {
           description: 'factory reboot',
@@ -269,7 +311,7 @@
           description: '# make solar farm',
           control: 'btnMakeFarm',
           condition: () => exists('powerDiv')
-            && (val('powerConsumptionRate')+val('harvesterLevelDisplay')+200) >= val('powerProductionRate')
+            && (val('powerConsumptionRate')+val('harvesterLevelDisplay')+FarmDroneBias) >= val('powerProductionRate')
             && (val('factoryLevelDisplay') > 0)
             && ((val('harvesterLevelDisplay') > 0 && val('wireDroneLevelDisplay') > 0)
               || val('powerProductionRate') == 0)
@@ -293,65 +335,72 @@
         {
           description: 'raise probe speed',
           control: 'btnRaiseProbeSpeed',
-          condition: () => val('probeSpeedDisplay') < Math.min(5, Math.floor(val('probeTrustDisplay') 
-            * 0.1 * (exists('combatButtonDiv') ? 0.8 : 1)))
+          condition: () => shouldRaiseProbeLevel(val('probeSpeedDisplay'), MaxProbeSpeed, ProbeSpeedPercent)
         },
         {
           description: 'lower probe speed',
           control: 'btnLowerProbeSpeed',
-          condition: () => val('probeSpeedDisplay') > Math.floor(val('probeTrustDisplay') 
-            * 0.1 * (exists('combatButtonDiv') ? 0.8 : 1))
+          condition: () => shouldLowerProbeLevel(val('probeSpeedDisplay'), ProbeSpeedPercent)
         },
         {
           description: 'raise probe nav',
           control: 'btnRaiseProbeNav',
-          condition: () => val('probeNavDisplay') < Math.min(10, Math.floor(val('probeTrustDisplay') 
-            * 0.08 * (exists('combatButtonDiv') ? 0.8 : 1)))
+          condition: () => shouldRaiseProbeLevel(val('probeNavDisplay'), MaxProbeNav, ProbeNavPercent)
         },
         {
           description: 'lower probe nav',
           control: 'btnLowerProbeNav',
-          condition: () => val('probeNavDisplay') > Math.floor(val('probeTrustDisplay') 
-            * 0.08 * (exists('combatButtonDiv') ? 0.8 : 1))
+          condition: () => shouldLowerProbeLevel(val('probeNavDisplay'), ProbeNavPercent)
         },
         {
           description: 'raise probe rep',
           control: 'btnRaiseProbeRep',
-          condition: () => val('probeRepDisplay') < Math.min(10, Math.floor(val('probeTrustDisplay') 
-            * 0.35 * (exists('combatButtonDiv') ? 0.8 : 1)))
+          condition: () => shouldRaiseProbeLevel(val('probeRepDisplay'), MaxProbeRep, ProbeRepPercent)
         },
         {
           description: 'lower probe rep',
           control: 'btnLowerProbeRep',
-          condition: () => val('probeRepDisplay') > Math.floor(val('probeTrustDisplay') 
-            * 0.35 * (exists('combatButtonDiv') ? 0.8 : 1))
+          condition: () => shouldLowerProbeLevel(val('probeRepDisplay'), ProbeRepPercent)
         },
         {
           description: 'raise probe haz',
           control: 'btnRaiseProbeHaz',
-          condition: () => val('probeHazDisplay') < Math.min(10, Math.floor(val('probeTrustDisplay') 
-            * 0.35 * (exists('combatButtonDiv') ? 0.8 : 1)))
+          condition: () => shouldRaiseProbeLevel(val('probeHazDisplay'), MaxProbeHaz, ProbeHazPercent)
         },
         {
           description: 'lower probe haz',
           control: 'btnLowerProbeHaz',
-          condition: () => val('probeHazDisplay') > Math.floor(val('probeTrustDisplay') 
-            * 0.35 * (exists('combatButtonDiv') ? 0.8 : 1))
+          condition: () => shouldLowerProbeLevel(val('probeHazDisplay'), ProbeHazPercent)
         },
         {
           description: 'raise probe fac',
           control: 'btnRaiseProbeFac',
-          condition: () => val('probeFacDisplay') === 0
+          condition: () => shouldRaiseProbeLevel(val('probeFacDisplay'), MaxProbeFac, ProbeFacPercent)
+        },
+        {
+          description: 'lower probe fac',
+          control: 'btnLowerProbeFac',
+          condition: () => shouldLowerProbeLevel(val('probeFacDisplay'), ProbeFacPercent)
         },
         {
           description: 'raise probe harv',
           control: 'btnRaiseProbeHarv',
-          condition: () => val('probeHarvDisplay') === 0
+          condition: () => shouldRaiseProbeLevel(val('probeHarvDisplay'), MaxProbeHarv, ProbeHarvPercent)
+        },
+        {
+          description: 'lower probe harv',
+          control: 'btnLowerProbeHarv',
+          condition: () => shouldLowerProbeLevel(val('probeHarvDisplay'), ProbeHarvPercent)
         },
         {
           description: 'raise probe wire',
           control: 'btnRaiseProbeWire',
-          condition: () => val('probeWireDisplay') === 0
+          condition: () => shouldRaiseProbeLevel(val('probeWireDisplay'), MaxProbeWire, ProbeWirePercent)
+        },
+        {
+          description: 'lower probe wire',
+          control: 'btnLowerProbeWire',
+          condition: () => shouldLowerProbeLevel(val('probeWireDisplay'), ProbeWirePercent)
         },
         {
           description: 'raise probe combat',
@@ -371,6 +420,23 @@
       condition: () => !exists('businessDiv') && !exists('powerDiv') && !exists('probeDesignDiv')
     }
   ]
+
+  function shouldMakeDrone(currentLevel, multiplier) {
+    return (currentLevel + multiplier <= DroneToFactorySquaredRatio * val('factoryLevelDisplay') ** 2)
+      && (currentLevel + multiplier * 10 > DroneToFactorySquaredRatio * val('factoryLevelDisplay') ** 2)
+      && ((val('powerConsumptionRate')+PowerProductionBias) <= val('powerProductionRate'))
+      && (val('availableMatterDisplay') > 0)
+  }
+
+  function shouldRaiseProbeLevel(currentLevel, maxValue, targetPercentage) {
+    return currentLevel < Math.min(maxValue, Math.floor(val('probeTrustDisplay') 
+      * targetPercentage * (exists('combatButtonDiv') ? 1-ProbeCombatPercent : 1)))
+  }
+
+  function shouldLowerProbeLevel(currentLevel, targetPercentage) {
+    return currentLevel > Math.floor(val('probeTrustDisplay') 
+      * targetPercentage * (exists('combatButtonDiv') ? 1-ProbeCombatPercent : 1))
+  }
 
   function el(id) {
     if (id in cache) {
@@ -449,6 +515,8 @@
     cache = {};
     evaluateRules(gameRules);
   }
+
+  validateProbePercentages();
 
   const actionPointer = document.createElement('div');
   actionPointer.id = 'actionPointer';
