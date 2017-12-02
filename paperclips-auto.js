@@ -30,7 +30,7 @@
   const MaxDrones = 50000;
   const MaxFactories = 160;
   const PowerProductionBias = 100;
-  const StorageToPowerProductionRatio = 50;
+  const StorageToPowerProductionRatio = 70;
   const DroneToFactorySquaredRatio = 7;
   const FarmDroneBias = 200;
   // Phase 3 Rule Parameters
@@ -294,13 +294,6 @@
                 || val('wireDroneLevelDisplay') === 0
             }
           ]
-        },
-        {
-          description: 'factory reboot',
-          control: 'btnFactoryReboot',
-          condition: () => val('clipmakerRate') === 0
-            && val('availableMatterDisplay') === 0
-            && val('acquiredMatterDisplay') === 0
         },
         {
           description: '# make solar farm',
