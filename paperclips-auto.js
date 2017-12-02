@@ -27,9 +27,10 @@
   const MinActiveInvestmentLevel = 10000000;
   const MinFundsForActiveInvestment = 900000;
   // Phase 2 Rule Parameters
-  const MaxFactories = 200;
+  const MaxDrones = 50000;
+  const MaxFactories = 160;
   const PowerProductionBias = 100;
-  const StorageToPowerProductionRatio = 100;
+  const StorageToPowerProductionRatio = 50;
   const DroneToFactorySquaredRatio = 7;
   const FarmDroneBias = 200;
   // Phase 3 Rule Parameters
@@ -419,7 +420,7 @@
     return (currentLevel + multiplier <= DroneToFactorySquaredRatio * val('factoryLevelDisplay') ** 2)
       && (currentLevel + multiplier * 10 > DroneToFactorySquaredRatio * val('factoryLevelDisplay') ** 2)
       && ((val('powerConsumptionRate')+PowerProductionBias) <= val('powerProductionRate'))
-      && (val('availableMatterDisplay') > 0)
+      && (currentLevel < MaxDrones)
   }
 
   function shouldRaiseProbeLevel(currentLevel, maxValue, targetPercentage) {
@@ -464,14 +465,14 @@
     }, 3000);
   }
 
-  function skipForTimeout(action) {
-    if (!action.timeout)
+  function skipForTimeout(rule) {
+    if (!rule.timeout)
       return false;
     const now = Date.now();
-    if (now < action.valid_time) {
+    if (now < rule.valid_time) {
       return true;
     } else {
-      action.valid_time = now + action.timeout;
+      rule.valid_time = now + rule.timeout;
       return false;
     }
   }
