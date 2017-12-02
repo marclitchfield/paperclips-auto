@@ -57,7 +57,7 @@
     const precombatAllocation = percentages.reduce((acc, pct) => acc + Math.floor(20 * pct), 0);
     const minCombatAllocation = percentages.reduce((acc, pct) => 
       Math.min(acc, Math.floor(20 * (1-ProbeCombatPercent) * pct)), Number.MAX_VALUE);
-      
+
     if (precombatAllocation !== 20)
       throw 'Non-Combat Probe Allocation does not equal 20';
     if (minCombatAllocation === 0)
@@ -247,8 +247,8 @@
             && val('maxStorage') <= val('powerProductionRate')*StorageToPowerProductionRatio
         },
         {
-          description: 'harvester drones',
-          condition: () => exists('harvesterDiv'),
+          description: 'drone manufacturing',
+          condition: () => exists('harvesterDiv') && exists('wireDroneDiv'),
           rules: [
             {
               description: '# make harvester x 1000',
@@ -256,31 +256,14 @@
               condition: () => shouldMakeDrone(val('harvesterLevelDisplay'), 1000)
             },
             {
-              description: '# make harvester x 100',
-              control: 'btnHarvesterx100',
-              condition: () => shouldMakeDrone(val('harvesterLevelDisplay'), 100)
-            },
-            {
-              description: '# make harvester x 10',
-              control: 'btnHarvesterx10',
-              condition: () => shouldMakeDrone(val('harvesterLevelDisplay'), 10)
-            },
-            {
-              description: '# make harvester',
-              control: 'btnMakeHarvester',
-              condition: () => shouldMakeDrone(val('harvesterLevelDisplay'), 1)
-                || val('harvesterLevelDisplay') === 0
-            },
-          ]
-        },
-        {
-          description: 'wire drones',
-          condition: () => exists('wireDroneDiv'),
-          rules: [
-            {
               description: '# make wire drone x 1000',
               control: 'btnWireDronex1000',
               condition: () => shouldMakeDrone(val('wireDroneLevelDisplay'), 1000)
+            },
+            {
+              description: '# make harvester x 100',
+              control: 'btnHarvesterx100',
+              condition: () => shouldMakeDrone(val('harvesterLevelDisplay'), 100)
             },
             {
               description: '# make wire drone x 100',
@@ -288,9 +271,20 @@
               condition: () => shouldMakeDrone(val('wireDroneLevelDisplay'), 100)
             },
             {
+              description: '# make harvester x 10',
+              control: 'btnHarvesterx10',
+              condition: () => shouldMakeDrone(val('harvesterLevelDisplay'), 10)
+            },
+            {
               description: '# make wire drone x 10',
               control: 'btnWireDronex10',
               condition: () => shouldMakeDrone(val('wireDroneLevelDisplay'), 10)
+            },
+            {
+              description: '# make harvester',
+              control: 'btnMakeHarvester',
+              condition: () => shouldMakeDrone(val('harvesterLevelDisplay'), 1)
+                || val('harvesterLevelDisplay') === 0
             },
             {
               description: '# make wire drone',
