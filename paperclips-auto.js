@@ -398,7 +398,7 @@
         {
           description: 'launch probe',
           control: 'btnMakeProbe',
-          condition: () => val('probesTotalDisplay') === 0 && val('probeTrustUsedDisplay') >= 20
+          condition: () => val('probesTotalDisplay') === 0 && val('probeTrustUsedDisplay') >= 10
         }
       ]
     },
